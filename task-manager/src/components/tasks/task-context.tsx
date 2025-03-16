@@ -11,16 +11,20 @@ export interface Task {
 }
 
 type Priority = Task['priority'] | 'all';
+type StatusFilter = 'all' | 'in-progress' | 'completed';
 
 interface TaskContextType {
   tasks: Task[];
   filteredTasks: Task[];
   selectedPriorities: Set<Priority>;
+  statusFilter: StatusFilter;
   addTask: (task: Omit<Task, 'id' | 'completed'>) => void;
   toggleTask: (taskId: string) => void;
   updateTask: (taskId: string, updatedTask: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
+  deleteTask: (taskId: string) => void;
   togglePriorityFilter: (priority: Priority) => void;
+  setStatusFilter: (status: StatusFilter) => void;
+  updateTaskOrder: (newOrder: Task[]) => void;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -28,65 +32,86 @@ const TaskContext = createContext<TaskContextType | undefined>(undefined);
 export function TaskProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([
     {
-      id: "1",
-      title: "Complete project proposal",
-      dueDate: "2024-03-20",
-      priority: "high",
+      id: '1',
+      title: 'Complete Senior Project',
+      dueDate: '2024-03-20',
+      priority: 'high',
       completed: false,
     },
     {
-      id: "2",
-      title: "Review team updates",
-      dueDate: "2024-03-21",
-      priority: "medium",
+      id: '2',
+      title: 'Review Team Updates',
+      dueDate: '2024-03-21',
+      priority: 'medium',
       completed: false,
     },
+    {
+      id: '3',
+      title: 'Submit Project Proposal',
+      dueDate: '2024-03-25',
+      priority: 'high',
+      completed: false,
+    },
+    {
+      id: '4',
+      title: 'Schedule Team Meeting',
+      dueDate: '2024-03-19',
+      priority: 'low',
+      completed: true,
+    },
+    {
+      id: '5',
+      title: 'Update Documentation',
+      dueDate: '2024-03-22',
+      priority: 'medium',
+      completed: false,
+    }
   ]);
-  
-  const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(() => 
-    new Set<Priority>(['all'])
-  );
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('in-progress');
+  const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set<Priority>(['all']));
+
+  // Add console log to verify tasks are loaded
+  console.log('TaskProvider tasks:', tasks);
 
   const filteredTasks = tasks.filter(task => {
-    if (selectedPriorities.has('all')) return true;
+    // First filter by status
+    if (statusFilter === 'in-progress') {
+      if (task.completed) return false;
+    } else if (statusFilter === 'completed') {
+      if (!task.completed) return false;
+    }
+
+    // Then filter by priority
+    if (selectedPriorities.has('all')) {
+      return true;
+    }
     return selectedPriorities.has(task.priority);
   });
-
   const togglePriorityFilter = (priority: Priority) => {
-    setSelectedPriorities(prev => {
-      const next = new Set(prev);
+    setSelectedPriorities((prev: Set<Priority>) => {
+      const next = new Set<Priority>(prev);
       
       if (priority === 'all') {
-        // If 'all' is being toggled
-        if (next.has('all')) {
-          next.delete('all');
-        } else {
-          next.clear();
-          next.add('all');
-        }
+        return new Set<Priority>(['all']);
       } else {
-        // If a specific priority is being toggled
-        if (next.has('all')) {
-          next.delete('all');
-          next.add(priority);
-        } else {
-          if (next.has(priority)) {
-            next.delete(priority);
-            // If no priorities are selected, select 'all'
-            if (next.size === 0) next.add('all');
-          } else {
-            next.add(priority);
+        next.delete('all');
+        
+        if (next.has(priority)) {
+          next.delete(priority);
+          if (next.size === 0) {
+            return new Set<Priority>(['all']);
           }
+        } else {
+          next.add(priority);
         }
       }
-      
       return next;
     });
   };
 
-  const addTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
+  const addTask = (task: Omit<Task, 'id' | 'completed'>) => {
     const newTask: Task = {
-      ...taskData,
+      ...task,
       id: Date.now().toString(),
       completed: false,
     };
@@ -103,14 +128,18 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   const updateTask = (taskId: string, updatedTask: Partial<Task>) => {
     setTasks(prev =>
-      prev.map((task) =>
+      prev.map(task =>
         task.id === taskId ? { ...task, ...updatedTask } : task
       )
     );
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(task => task.id !== id));
+  const deleteTask = (taskId: string) => {
+    setTasks(prev => prev.filter(task => task.id !== taskId));
+  };
+
+  const updateTaskOrder = (newOrder: Task[]) => {
+    setTasks(newOrder);
   };
 
   return (
@@ -119,11 +148,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         tasks, 
         filteredTasks,
         selectedPriorities,
+        statusFilter,
         addTask, 
         toggleTask, 
         updateTask, 
         deleteTask,
-        togglePriorityFilter
+        togglePriorityFilter,
+        setStatusFilter,
+        updateTaskOrder
       }}
     >
       {children}
