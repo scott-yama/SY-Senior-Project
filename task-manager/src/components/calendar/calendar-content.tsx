@@ -16,9 +16,9 @@ export function CalendarContent() {
   const { tasks } = useTasks();
   
   // Filter out tasks without due dates and format them for the calendar
-  const calendarTasks = tasks.filter(task => task.due_date).map(task => ({
+  const calendarTasks = tasks.filter(task => task.dueDate).map(task => ({
     ...task,
-    due_date: formatDateToMMDDYYYY(task.due_date)
+    dueDate: formatDateToMMDDYYYY(task.dueDate)
   }));
 
   console.log('Calendar tasks with MM/DD/YYYY format:', calendarTasks);
