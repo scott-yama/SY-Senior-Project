@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'react-hot-toast';
+import ReactConfetti from 'react-confetti';
+import { Check } from 'lucide-react';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,6 +37,7 @@ interface TaskContextType {
   setStatusFilter: (status: StatusFilter) => void;
   updateTaskOrder: (newOrder: Task[]) => void;
   isLoading: boolean;
+  showConfetti: boolean;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -44,6 +47,18 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('in-progress');
   const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set<Priority>(['all']));
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiTimeout, setConfettiTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [confettiKey, setConfettiKey] = useState(0);
+
+  // Cleanup function for timeouts
+  useEffect(() => {
+    return () => {
+      if (confettiTimeout) {
+        clearTimeout(confettiTimeout);
+      }
+    };
+  }, [confettiTimeout]);
 
   // Fetch tasks from Supabase on component mount
   useEffect(() => {
@@ -200,6 +215,25 @@ export function TaskProvider({ children }: { children: ReactNode }) {
           task.id === taskId ? { ...task, completed: !task.completed } : task
         )
       );
+
+      // Show confetti when completing a task (not when uncompleting)
+      if (!taskToToggle.completed) {
+        // Clear any existing timeout
+        if (confettiTimeout) {
+          clearTimeout(confettiTimeout);
+        }
+        
+        // Show confetti with a new key
+        setConfettiKey(prev => prev + 1);
+        setShowConfetti(true);
+        
+        // Set new timeout for hiding confetti
+        const timeout = setTimeout(() => {
+          setShowConfetti(false);
+        }, 5000); // Total duration: 2s animation + 3s fall-out
+        
+        setConfettiTimeout(timeout);
+      }
     } catch (error) {
       console.error('Error in toggleTask:', error);
     }
@@ -298,9 +332,25 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         togglePriorityFilter,
         setStatusFilter,
         updateTaskOrder,
-        isLoading
+        isLoading,
+        showConfetti
       }}
     >
+      {showConfetti && (
+        <ReactConfetti
+          key={confettiKey}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.6}
+          tweenDuration={2000}
+          onConfettiComplete={() => {
+            // Let the confetti fall to the bottom before hiding
+            // The actual hiding is now handled by the timeout in toggleTask
+          }}
+        />
+      )}
       {children}
     </TaskContext.Provider>
   );
