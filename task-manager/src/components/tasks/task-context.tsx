@@ -35,8 +35,48 @@ interface TaskContextType {
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
+<<<<<<< Updated upstream
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: '1',
+      title: 'Complete Senior Project',
+      dueDate: '2024-03-20',
+      priority: 'high',
+      completed: false,
+    },
+    {
+      id: '2',
+      title: 'Review Team Updates',
+      dueDate: '2024-03-21',
+      priority: 'medium',
+      completed: false,
+    },
+    {
+      id: '3',
+      title: 'Submit Project Proposal',
+      dueDate: '2024-03-25',
+      priority: 'high',
+      completed: false,
+    },
+    {
+      id: '4',
+      title: 'Schedule Team Meeting',
+      dueDate: '2024-03-19',
+      priority: 'low',
+      completed: true,
+    },
+    {
+      id: '5',
+      title: 'Update Documentation',
+      dueDate: '2024-03-22',
+      priority: 'medium',
+      completed: false,
+    }
+  ]);
+=======
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+>>>>>>> Stashed changes
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('in-progress');
   const [selectedPriorities, setSelectedPriorities] = useState<Set<Priority>>(new Set<Priority>(['all']));
 

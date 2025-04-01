@@ -9,14 +9,14 @@ interface CalendarProps {
   tasks: Array<{
     id: string;
     title: string;
-    dueDate: string;
+    due_date: string;
     priority: "low" | "medium" | "high";
     completed: boolean;
   }>;
 }
 
 export function CalendarView({ tasks: propTasks }: CalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date(2024, 2, 1));
   const { toggleTask } = useTasks();
   
   const tasks = propTasks; // Use only the real tasks
@@ -70,8 +70,8 @@ export function CalendarView({ tasks: propTasks }: CalendarProps) {
     const formattedDate = formatDate(date, monthOffset);
     console.log('Looking for tasks on date:', formattedDate);
     const dayTasks = tasks.filter(task => {
-      const matches = task.dueDate === formattedDate;
-      console.log(`Comparing task date ${task.dueDate} with ${formattedDate}, matches: ${matches}`);
+      const matches = task.due_date === formattedDate;
+      console.log(`Comparing task date ${task.due_date} with ${formattedDate}, matches: ${matches}`);
       return matches;
     });
     console.log('Found tasks:', dayTasks);

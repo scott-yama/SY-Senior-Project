@@ -66,10 +66,7 @@ export function CreateTaskForm() {
       
       <div className="space-y-2">
         <Label htmlFor="priority">Priority</Label>
-        <Select 
-          value={priority} 
-          onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
-        >
+        <Select value={priority} onValueChange={setPriority}>
           <SelectTrigger>
             <SelectValue placeholder="Select priority" />
           </SelectTrigger>

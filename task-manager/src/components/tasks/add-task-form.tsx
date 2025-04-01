@@ -19,30 +19,41 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { Task, useTasks } from "./task-context";
-import { Plus } from "lucide-react";
+import { Plus, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export function AddTaskForm() {
   const { addTask } = useTasks();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [priority, setPriority] = useState<Task['priority']>('medium');
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("low");
 
   const resetForm = () => {
     setTitle('');
     setDueDate('');
-    setPriority('medium');
+    setPriority("low");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Submitting task with date:', dueDate); // Debug log
+    if (!dueDate) return;
+
+    const formattedDate = format(new Date(dueDate), 'yyyy-MM-dd');
+    console.log('Submitting task with date:', formattedDate);
     
     addTask({
       title,
-      due_date: dueDate,
+      due_date: formattedDate,
       priority,
     });
     resetForm();
@@ -66,14 +77,11 @@ export function AddTaskForm() {
       </DialogTrigger>
       <DialogContent className="bg-white">
         <DialogHeader>
-          <DialogTitle className="text-[#1E3D59]">Add New Task</DialogTitle>
+          <DialogTitle>Add New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title" className="flex gap-1 text-[#1E3D59]">
-              Title
-              <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="title">Task Title</Label>
             <Input
               id="title"
               placeholder="Enter task title"
@@ -85,33 +93,27 @@ export function AddTaskForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate" className="flex gap-1 text-[#1E3D59]">
-              Due Date
-              <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="dueDate">Due Date</Label>
             <Input
               id="dueDate"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              max="9999-12-31"
-              required
+              placeholder="mm/dd/yyyy"
               className="border-[#5C7BA1] focus-visible:ring-[#3D5A80] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:inline-flex [&::-webkit-calendar-picker-indicator]:ml-auto"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="priority" className="flex gap-1 text-[#1E3D59]">
-              Priority
-              <span className="text-red-500">*</span>
-            </Label>
+            <Label htmlFor="priority">Priority</Label>
             <Select
               value={priority}
               onValueChange={(value: "low" | "medium" | "high") => setPriority(value)}
-              required
             >
-              <SelectTrigger id="priority" className="border-[#5C7BA1] focus:ring-[#3D5A80]">
+              <SelectTrigger 
+                id="priority" 
+                className="border-[#5C7BA1] focus:ring-[#3D5A80]"
+              >
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
               <SelectContent>
