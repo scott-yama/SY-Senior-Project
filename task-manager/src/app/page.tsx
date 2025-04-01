@@ -1,5 +1,7 @@
 'use client';
 
+import supabase from "@/config/supabaseClient";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { TaskList } from "@/components/tasks/task-list";
 import { TaskSidebar } from "@/components/tasks/task-sidebar";
@@ -9,6 +11,7 @@ import { TaskProvider } from "@/components/tasks/task-context";
 import { PriorityFilter } from "../components/tasks/priority-filter";
 
 function HomeContent() {
+  const [Error, setError] = useState(null);
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
