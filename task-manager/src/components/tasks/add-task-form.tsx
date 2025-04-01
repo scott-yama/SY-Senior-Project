@@ -20,12 +20,13 @@ import {
 import { useState } from "react";
 import { useTasks } from "./task-context";
 import { Plus } from "lucide-react";
+import type { Task } from "./task-context";
 
 export function AddTaskForm() {
   const { addTask } = useTasks();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [due_date, setDueDate] = useState('');
   const [priority, setPriority] = useState<Task['priority']>('medium');
 
   const resetForm = () => {
@@ -36,9 +37,10 @@ export function AddTaskForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting task:', { title, due_date, priority });
     addTask({
       title,
-      dueDate,
+      due_date,
       priority,
     });
     resetForm();
@@ -81,14 +83,14 @@ export function AddTaskForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate" className="flex gap-1 text-[#1E3D59]">
+            <Label htmlFor="due_date" className="flex gap-1 text-[#1E3D59]">
               Due Date
               <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="dueDate"
+              id="due_date"
               type="date"
-              value={dueDate}
+              value={due_date}
               onChange={(e) => setDueDate(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
               max="9999-12-31"
@@ -102,12 +104,11 @@ export function AddTaskForm() {
               Priority
               <span className="text-red-500">*</span>
             </Label>
-            <Select
-              value={priority}
+            <Select 
+              value={priority} 
               onValueChange={(value: Task['priority']) => setPriority(value)}
-              required
             >
-              <SelectTrigger id="priority" className="border-[#5C7BA1] focus:ring-[#3D5A80]">
+              <SelectTrigger className="border-[#5C7BA1] focus:ring-[#3D5A80]">
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
               <SelectContent>
@@ -122,17 +123,16 @@ export function AddTaskForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}
-              className="border-[#5C7BA1] text-[#3D5A80] hover:bg-[#E6EEF8]"
+              onClick={() => setOpen(false)}
+              className="border-[#5C7BA1] text-[#3D5A80] hover:bg-[#98B5D5]/20"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!title || !dueDate || !priority}
               className="bg-[#3D5A80] hover:bg-[#2C4B6F] text-white"
             >
-              Create Task
+              Add Task
             </Button>
           </div>
         </form>

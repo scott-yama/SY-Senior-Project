@@ -4,22 +4,23 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTasks } from "@/components/tasks/task-context";
+import { Task } from "@/components/tasks/task-context";
 
 interface CalendarProps {
   tasks: Array<{
     id: string;
     title: string;
-    dueDate: string;
+    due_date: string; // Changed from dueDate to due_date
     priority: "low" | "medium" | "high";
     completed: boolean;
   }>;
 }
 
 export function CalendarView({ tasks: propTasks }: CalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2024, 2, 1));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const { toggleTask } = useTasks();
   
-  const tasks = propTasks; // Use only the real tasks
+  const tasks = propTasks;
   
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -60,22 +61,21 @@ export function CalendarView({ tasks: propTasks }: CalendarProps) {
     const month = String(targetDate.getMonth() + 1).padStart(2, '0');
     const day = String(date).padStart(2, '0');
     const year = targetDate.getFullYear();
-    const formattedDate = `${month}/${day}/${year}`;
-    console.log('Formatting date:', formattedDate);
-    return formattedDate;
+    return `${month}/${day}/${year}`;
   };
 
   // Get tasks for a specific date
   const getTasksForDate = (date: number, monthOffset: number = 0) => {
     const formattedDate = formatDate(date, monthOffset);
-    console.log('Looking for tasks on date:', formattedDate);
-    const dayTasks = tasks.filter(task => {
-      const matches = task.dueDate === formattedDate;
-      console.log(`Comparing task date ${task.dueDate} with ${formattedDate}, matches: ${matches}`);
-      return matches;
+    return tasks.filter(task => {
+      // Convert task's due_date to MM/DD/YYYY format for comparison
+      const taskDate = new Date(task.due_date + 'T00:00:00'); // Add time component to force local timezone
+      const taskMonth = String(taskDate.getMonth() + 1).padStart(2, '0');
+      const taskDay = String(taskDate.getDate()).padStart(2, '0');
+      const taskYear = taskDate.getFullYear();
+      const taskFormattedDate = `${taskMonth}/${taskDay}/${taskYear}`;
+      return taskFormattedDate === formattedDate;
     });
-    console.log('Found tasks:', dayTasks);
-    return dayTasks;
   };
 
   const getPriorityStyles = (priority: string) => {
