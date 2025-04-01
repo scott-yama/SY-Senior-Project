@@ -20,8 +20,7 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { useState } from "react";
-import { useTasks } from "./task-context";
-import type { Task } from "./task-context";
+import { useTasks, type Task } from "./task-context";
 import { Pencil, Trash2, GripVertical } from "lucide-react";
 import {
   DndContext,
@@ -39,7 +38,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { toast } from "sonner";
 
 interface EditTaskFormProps {
   task: Task;
@@ -49,12 +47,12 @@ interface EditTaskFormProps {
 
 function EditTaskForm({ task, onSave, onClose }: EditTaskFormProps) {
   const [title, setTitle] = useState(task.title);
-  const [dueDate, setDueDate] = useState(task.due_date);
+  const [dueDate, setDueDate] = useState(task.dueDate);
   const [priority, setPriority] = useState<Task['priority']>(task.priority);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(task.id, { title, due_date: dueDate, priority });
+    onSave(task.id, { title, dueDate, priority });
     onClose();
   };
 
@@ -109,10 +107,9 @@ interface SortableTaskItemProps {
   task: any;
   onEdit: (taskId: string) => void;
   onToggle: (taskId: string) => void;
-  onDelete: (taskId: string) => void;
 }
 
-function SortableTaskItem({ task, onEdit, onToggle, onDelete }: SortableTaskItemProps) {
+function SortableTaskItem({ task, onEdit, onToggle }: SortableTaskItemProps) {
   const {
     attributes,
     listeners,
@@ -156,9 +153,7 @@ function SortableTaskItem({ task, onEdit, onToggle, onDelete }: SortableTaskItem
               <h3 className={`font-medium text-[15px] text-[#1E3D59] ${task.completed ? 'line-through opacity-70' : ''}`}>
                 {task.title}
               </h3>
-              <p className="text-sm text-[#3D5A80]">
-                Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
-              </p>
+              <p className="text-sm text-[#3D5A80]">Due: {task.dueDate}</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge className={`${getPriorityStyles(task.priority)} text-sm`} variant="secondary">
@@ -180,14 +175,6 @@ function SortableTaskItem({ task, onEdit, onToggle, onDelete }: SortableTaskItem
                   className="h-8 px-3 border-[#3D5A80] text-[#3D5A80] hover:bg-[#98B5D5]/20 text-sm"
                 >
                   {task.completed ? 'Undo' : 'Complete'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={(e) => onDelete(task.id)}
-                  className="h-8 w-8 border-[#3D5A80] text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="size-4" />
                 </Button>
               </div>
             </div>
@@ -221,15 +208,6 @@ export function TaskList() {
     }
   };
 
-  const handleDelete = async (taskId: string) => {
-    try {
-      await deleteTask(taskId);
-      toast.success("Task deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete task");
-    }
-  };
-
   const editingTask = editingTaskId ? tasks.find(t => t.id === editingTaskId) : null;
 
   return (
@@ -248,7 +226,6 @@ export function TaskList() {
                   task={task}
                   onEdit={(id) => setEditingTaskId(id)}
                   onToggle={toggleTask}
-                  onDelete={handleDelete}
                 />
               ))}
             </div>
