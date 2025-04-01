@@ -134,32 +134,46 @@ export function TaskProvider({ children }: { children: ReactNode }) {
 
   const addTask = async (task: Omit<Task, 'id' | 'completed'>) => {
     try {
-      console.log('Received task data:', task); // Debug log
+      console.log('AddTask - Received task data:', task);
+
+      if (!task.title || !task.due_date) {
+        console.error('Missing required fields:', { title: task.title, due_date: task.due_date });
+        throw new Error('Missing required fields');
+      }
+
+      const taskData = {
+        title: task.title.trim(),
+        due_date: task.due_date,
+        priority: task.priority,
+        completed: false
+      };
+
+      console.log('AddTask - Sending to Supabase:', taskData);
       
       const { data, error } = await supabase
         .from('tasks')
-        .insert([
-          { 
-            title: task.title,
-            due_date: task.due_date, // This will now receive the correct property name
-            priority: task.priority,
-            completed: false
-          }
-        ])
-        .select();
+        .insert(taskData)
+        .select()
+        .single();
         
       if (error) {
-        console.error('Error adding task:', error.message);
-        toast.error("Failed to create task");
-        return;
+        console.error('Supabase error:', error);
+        throw error;
       }
       
       console.log('Task added successfully:', data);
+
+      // Update local state
+      if (data) {
+        setTasks(prev => [data, ...prev]);
+      }
+      
       toast.success("Task created successfully");
       
     } catch (error) {
       console.error('Error in addTask:', error);
       toast.error("Failed to create task");
+      throw error;
     }
   };
 
